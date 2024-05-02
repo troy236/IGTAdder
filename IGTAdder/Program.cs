@@ -88,82 +88,123 @@ internal class Program {
     static string ParseTimes(List<string> times, int format) {
         switch (format) {
             case 1: {
-                    //0:00
+                    //hh:mm:ss
+                    uint totalHours = 0;
                     uint totalMinutes = 0;
-                    uint totalseconds = 0;
+                    uint totalSeconds = 0;
                     foreach (string time in times) {
                         string[] timeSplit = time.Split(separator, StringSplitOptions.RemoveEmptyEntries);
                         try {
-                            if (timeSplit.Length != 2) throw new FormatException();
+                            if (timeSplit.Length is not 2 or 3) throw new FormatException();
+                            if (timeSplit.Length == 2) {
                             totalMinutes += uint.Parse(timeSplit[0].Trim());
-                            totalseconds += uint.Parse(timeSplit[1].Trim());
+                                totalSeconds += uint.Parse(timeSplit[1].Trim());
+                            }
+                            else {
+                                totalHours += uint.Parse(timeSplit[0].Trim());
+                                totalMinutes += uint.Parse(timeSplit[1].Trim());
+                                totalSeconds += uint.Parse(timeSplit[2].Trim());
+                            }
                         }
                         catch (FormatException) {
                             Console.WriteLine($"Failed to parse {time} as a time string. Format must be 0'00 or 0:00");
                             return null;
                         }
                     }
-                    while (totalseconds >= 60) {
-                        totalseconds -= 60;
+                    while (totalSeconds >= 60) {
+                        totalSeconds -= 60;
                         totalMinutes += 1;
                     }
-                    return $"{totalMinutes:D2}:{totalseconds:D2}";
+                    while (totalMinutes >= 60) {
+                        totalMinutes -= 60;
+                        totalHours += 1;
+                    }
+                    if (totalHours == 0) return $"{totalMinutes:D2}:{totalSeconds:D2}";
+                    return $"{totalHours:D2}:{totalMinutes:D2}:{totalSeconds:D2}";
                 }
             case 2: {
-                    //0:00:00
+                    //hh:mm:ss:cs
+                    uint totalHours = 0;
                     uint totalMinutes = 0;
-                    uint totalseconds = 0;
-                    uint totalcentiseconds = 0;
+                    uint totalSeconds = 0;
+                    uint totalCentiseconds = 0;
                     foreach (string time in times) {
                         string[] timeSplit = time.Split(separator, StringSplitOptions.RemoveEmptyEntries);
                         try {
-                            if (timeSplit.Length != 3) throw new FormatException();
+                            if (timeSplit.Length is not 3 or 4) throw new FormatException();
+                            if (timeSplit.Length == 3) {
                             totalMinutes += uint.Parse(timeSplit[0].Trim());
-                            totalseconds += uint.Parse(timeSplit[1].Trim());
-                            totalcentiseconds += uint.Parse(timeSplit[2].Trim());
+                                totalSeconds += uint.Parse(timeSplit[1].Trim());
+                                totalCentiseconds += uint.Parse(timeSplit[2].Trim());
+                            }
+                            else {
+                                totalHours += uint.Parse(timeSplit[0].Trim());
+                                totalMinutes += uint.Parse(timeSplit[1].Trim());
+                                totalSeconds += uint.Parse(timeSplit[2].Trim());
+                                totalCentiseconds += uint.Parse(timeSplit[3].Trim());
+                            }
                         }
                         catch (FormatException) {
                             Console.WriteLine($"Failed to parse {time} as a time string. Format must be 0'00''00 or 0:00:00");
                             return null;
                         }
                     }
-                    while (totalcentiseconds >= 100) {
-                        totalcentiseconds -= 100;
-                        totalseconds += 1;
+                    while (totalCentiseconds >= 100) {
+                        totalCentiseconds -= 100;
+                        totalSeconds += 1;
                     }
-                    while (totalseconds >= 60) {
-                        totalseconds -= 60;
+                    while (totalSeconds >= 60) {
+                        totalSeconds -= 60;
                         totalMinutes += 1;
                     }
-                    return $"{totalMinutes:D2}:{totalseconds:D2}:{totalcentiseconds:D2}";
+                    while (totalMinutes >= 60) {
+                        totalMinutes -= 60;
+                        totalHours += 1;
+                    }
+                    if (totalHours == 0) return $"{totalMinutes:D2}:{totalSeconds:D2}:{totalCentiseconds:D2}";
+                    return $"{totalHours:D2}:{totalMinutes:D2}:{totalSeconds:D2}:{totalCentiseconds:D2}";
                 }
             case 3: {
-                    //0:00:000
+                    //hh:mm:ss:ms
+                    uint totalHours = 0;
                     uint totalMinutes = 0;
-                    uint totalseconds = 0;
-                    uint totalmilliseconds = 0;
+                    uint totalSeconds = 0;
+                    uint totalMilliseconds = 0;
                     foreach (string time in times) {
                         string[] timeSplit = time.Split(separator, StringSplitOptions.RemoveEmptyEntries);
                         try {
-                            if (timeSplit.Length != 3) throw new FormatException();
+                            if (timeSplit.Length is not 3 or 4) throw new FormatException();
+                            if (timeSplit.Length == 3) {
                             totalMinutes += uint.Parse(timeSplit[0].Trim());
-                            totalseconds += uint.Parse(timeSplit[1].Trim());
-                            totalmilliseconds += uint.Parse(timeSplit[2].Trim());
+                                totalSeconds += uint.Parse(timeSplit[1].Trim());
+                                totalMilliseconds += uint.Parse(timeSplit[2].Trim());
+                            }
+                            else {
+                                totalHours += uint.Parse(timeSplit[0].Trim());
+                                totalMinutes += uint.Parse(timeSplit[1].Trim());
+                                totalSeconds += uint.Parse(timeSplit[2].Trim());
+                                totalMilliseconds += uint.Parse(timeSplit[3].Trim());
+                            }
                         }
                         catch (FormatException) {
                             Console.WriteLine($"Failed to parse {time} as a time string. Format must be 0'00''000 or 0:00:000");
                             return null;
                         }
                     }
-                    while (totalmilliseconds >= 1000) {
-                        totalmilliseconds -= 1000;
-                        totalseconds += 1;
+                    while (totalMilliseconds >= 1000) {
+                        totalMilliseconds -= 1000;
+                        totalSeconds += 1;
                     }
-                    while (totalseconds >= 60) {
-                        totalseconds -= 60;
+                    while (totalSeconds >= 60) {
+                        totalSeconds -= 60;
                         totalMinutes += 1;
                     }
-                    return $"{totalMinutes:D2}:{totalseconds:D2}:{totalmilliseconds:D3}";
+                    while (totalMinutes >= 60) {
+                        totalMinutes -= 60;
+                        totalHours += 1;
+                    }
+                    if (totalHours == 0) return $"{totalMinutes:D2}:{totalSeconds:D2}:{totalMilliseconds:D2}";
+                    return $"{totalHours:D2}:{totalMinutes:D2}:{totalSeconds:D2}:{totalMilliseconds:D3}";
                 }
             default: return string.Empty;
         }
