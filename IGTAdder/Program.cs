@@ -14,11 +14,11 @@ internal class Program {
     }
 
     static void Start() {
-        Console.WriteLine("IGT Adder - Version 1.0.0");
-        Console.WriteLine("Adds In Game Times with support for centiseconds and milliseconds");
+        Console.WriteLine("IGT Adder - Version 1.1.0");
+        Console.WriteLine("Combines times with support for centiseconds and milliseconds");
         Console.WriteLine();
         try {
-            Console.Title = "IGT Adder 1.0.0";
+            Console.Title = "IGT Adder 1.1.0";
         }
         catch { }
         Console.WriteLine("Select choice:");
@@ -55,7 +55,7 @@ internal class Program {
         List<string> IGTData;
         if (choiceInt == 1) {
             while (true) {
-                Console.WriteLine("Input path to IGT file. Each time must be on its own line");
+                Console.WriteLine("Input path to IGT file. The first time found per line will be used");
                 Console.Write("Enter path (Leave empty to exit): ");
                 string IGTFile = Console.ReadLine();
                 if (string.IsNullOrEmpty(IGTFile)) return;
@@ -63,7 +63,17 @@ internal class Program {
                     Console.WriteLine("File does not exist");
                     continue;
                 }
-                IGTData = new(File.ReadAllLines(IGTFile));
+                string[] lines = File.ReadAllLines(IGTFile);
+                IGTData = new(lines.Length);
+                for (int i = 0; i < lines.Length; i++) {
+                    try {
+                        IGTData.Add(FindTimeInString(lines[i], IGTFormat));
+                    }
+                    catch (FormatException) {
+                        Console.WriteLine($"Could not locate a time string in line {i}: {lines[i]}. Moving to next line");
+                        continue;
+                    }
+                }
                 break;
             }
         }
@@ -74,7 +84,13 @@ internal class Program {
                 Console.Write("Enter time: ");
                 string IGTTime = Console.ReadLine();
                 if (string.IsNullOrEmpty(IGTTime)) break;
-                IGTData.Add(IGTTime);
+                try {
+                    IGTData.Add(FindTimeInString(IGTTime, IGTFormat));
+                }
+                catch (FormatException) {
+                    Console.WriteLine($"Could not locate a time string in provided text");
+                    continue;
+                }
             }
         }
         else return;
@@ -83,7 +99,35 @@ internal class Program {
         Console.WriteLine($"Total IGT: {timeStr}");
     }
 
-    private static readonly char[] separator = ['\'', ':'];
+    private static readonly char[] separator = ['\'', ':', '.'];
+
+    static string FindTimeInString(string str, int format) {
+        foreach (var text in str.Split(' ', StringSplitOptions.RemoveEmptyEntries)) {
+            if (!char.IsDigit(text[0])) continue;
+            string[] timeSplit = text.Split(separator, StringSplitOptions.RemoveEmptyEntries);
+            if (format == 1) {
+                //hh:mm:ss
+                if (timeSplit.Length is not 2 or 3) continue;
+                if (!uint.TryParse(timeSplit[0].Trim(), out _)) continue;
+                if (!uint.TryParse(timeSplit[1].Trim(), out _)) continue;
+                if (timeSplit.Length == 3) {
+                    if (!uint.TryParse(timeSplit[2].Trim(), out _)) continue;
+                }
+            }
+            else if (format is 2 or 3) {
+                //hh:mm:ss:cs/ms
+                if (timeSplit.Length is not 3 or 4) continue;
+                if (!uint.TryParse(timeSplit[0].Trim(), out _)) continue;
+                if (!uint.TryParse(timeSplit[1].Trim(), out _)) continue;
+                if (!uint.TryParse(timeSplit[2].Trim(), out _)) continue;
+                if (timeSplit.Length == 4) {
+                    if (!uint.TryParse(timeSplit[3].Trim(), out _)) continue;
+                }
+            }
+            return text;
+        }
+        throw new FormatException();
+    }
 
     static string ParseTimes(List<string> times, int format) {
         switch (format) {
@@ -97,7 +141,7 @@ internal class Program {
                         try {
                             if (timeSplit.Length is not 2 or 3) throw new FormatException();
                             if (timeSplit.Length == 2) {
-                            totalMinutes += uint.Parse(timeSplit[0].Trim());
+                                totalMinutes += uint.Parse(timeSplit[0].Trim());
                                 totalSeconds += uint.Parse(timeSplit[1].Trim());
                             }
                             else {
@@ -133,7 +177,7 @@ internal class Program {
                         try {
                             if (timeSplit.Length is not 3 or 4) throw new FormatException();
                             if (timeSplit.Length == 3) {
-                            totalMinutes += uint.Parse(timeSplit[0].Trim());
+                                totalMinutes += uint.Parse(timeSplit[0].Trim());
                                 totalSeconds += uint.Parse(timeSplit[1].Trim());
                                 totalCentiseconds += uint.Parse(timeSplit[2].Trim());
                             }
@@ -175,7 +219,7 @@ internal class Program {
                         try {
                             if (timeSplit.Length is not 3 or 4) throw new FormatException();
                             if (timeSplit.Length == 3) {
-                            totalMinutes += uint.Parse(timeSplit[0].Trim());
+                                totalMinutes += uint.Parse(timeSplit[0].Trim());
                                 totalSeconds += uint.Parse(timeSplit[1].Trim());
                                 totalMilliseconds += uint.Parse(timeSplit[2].Trim());
                             }
